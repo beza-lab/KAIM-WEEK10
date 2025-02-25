@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import moment from 'moment';
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
@@ -15,7 +16,13 @@ const Dashboard = () => {
 
   const fetchPredictions = () => {
     axios.get(`http://127.0.0.1:5000/api/predictions?model=${model}`)
-      .then(response => setPredictions(response.data))
+      .then(response => {
+        const predictionDates = Array.from({ length: 30 }, (_, i) => ({
+          Date: moment().add(i, 'days').format('YYYY-MM-DD'),
+          Prediction: response.data[i]
+        }));
+        setPredictions(predictionDates);
+      })
       .catch(error => console.error(error));
   };
 
@@ -46,9 +53,9 @@ const Dashboard = () => {
 
       {Array.isArray(predictions) && (
         <LineChart width={600} height={300} data={predictions}>
-          <Line type="monotone" dataKey="0" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="Prediction" stroke="#82ca9d" />
           <CartesianGrid stroke="#ccc" />
-          <XAxis />
+          <XAxis dataKey="Date" />
           <YAxis />
           <Tooltip />
           <Legend />
